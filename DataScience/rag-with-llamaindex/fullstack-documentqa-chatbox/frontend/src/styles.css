@@ -1,0 +1,39 @@
+
+.question-and-response, .upload-and-display {
+    margin: 0px 20px;
+}
+
+
+.dropzone {
+    border: 2px dashed #cccccc;
+    border-radius: 5px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+}
+
+button {
+    margin: 10px 0px;
+    height: 40px;
+    background-color:#333;
+    color: #fff;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    color: #fff;
+    padding: 10px; 
+  }
+
+textarea {
+    resize: none;
+    font-size: large;
+}
+
+.App {
+    margin-top: 50px; /* add some margin to the top of the main content */
+}
