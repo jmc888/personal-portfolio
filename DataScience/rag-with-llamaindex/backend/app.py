@@ -57,18 +57,20 @@ embed_model = HuggingFaceEmbedding(
 @app.route("/upload", methods=["POST"])
 def upload_file():
     print(request)
-    if "file" not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    f = request.files["file"]
-    if f.filename == "":
-        return jsonify({"error": "No selected file"}), 400
-    if f:
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], f.filename)
-        f.save(filepath)
-        return (
-            jsonify({"message": "File uploaded successfully", "filename": f.filename}),
-            200,
-        )
+    if "files" not in request.files:
+        return jsonify({"error": "No files part in the request"}), 400
+    files = request.files.getlist("files")
+    filenames = []
+    for file in files:
+        if file:
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+            file.save(filepath)
+            filenames.append(file.filename)
+
+    return (
+        jsonify({"message": "File uploaded successfully", "filename": filenames}),
+        200,
+    )
 
 
 @app.route("/files", methods=["GET"])
@@ -97,7 +99,7 @@ def sync_vector_store():
     for doc in documents:
         doc.text = doc.text.replace("\x00", "")
 
-    _ = VectorStoreIndex.from_documents(
+    index = VectorStoreIndex.from_documents(
         documents,
         storage_context=storage_context,
         show_progress=True,
@@ -127,7 +129,7 @@ def query_document():
         vector_store=vector_store,
         embed_model=embed_model,
     )
-    query_engine = index.as_query_engine(similarity_top_k=2)
+    query_engine = index.as_query_engine(similarity_top_k=4)
     results = query_engine.query(question_text)
 
     if results:
@@ -146,4 +148,4 @@ def query_document():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True)

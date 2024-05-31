@@ -19,17 +19,23 @@ const UploadComponent = () => {
         setUploadedFiles(response.data);
     };
 
-    const onDrop = useCallback(acceptedFiles => {
+    const onDrop = useCallback((acceptedFiles) => {
         const formData = new FormData();
-        formData.append('file', acceptedFiles[0]);
+        acceptedFiles.forEach(file => {
+            formData.append('files', file);
+        });
 
         axios.post('http://localhost:5000/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
-        }).then(() => {
+        }).then(response => {
+            console.log('Files uploaded succesfully: ', response.data);
             fetchFiles();
-        });
+        }).catch(error => {
+            console.log('Error uploading files: ', error );
+        }
+        );
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
