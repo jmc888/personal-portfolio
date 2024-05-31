@@ -1,7 +1,7 @@
 import React from 'react';
 import UploadComponent from './components/UploadComponent';
+import QuestionAnsweringComponent from './components/QuestionAnsweringComponent';
 import './styles.css';
-import Chatbox from './components/Chatbox';
 
 function Header() {
   return (
@@ -19,7 +19,7 @@ function App() {
           <UploadComponent />
         </div>
         <div style={{ minHeight: '20%', flex: '1' }}>
-          <Chatbox />
+          <QuestionAnsweringComponent />
         </div>
       </div>
     </div>

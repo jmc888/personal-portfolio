@@ -1,64 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import PDFPreview from './PDFPreview';
-// import UploadedFiles from './UploadedFiles';
-
-// const UploadComponent = () => {
-//     const [file, setFile] = useState(null);
-//     const [uploadedFiles, setUploadedFiles] = useState([]);
-//     const [selectedFile, setSelectedFile] = useState(null);
-
-//     useEffect(() => {
-//         fetchFiles();
-//     }, []);
-
-//     const fetchFiles = async () => {
-//         const response = await axios.get('http://localhost:5000/files');
-//         setUploadedFiles(response.data);
-//     };
-
-//     const handleFileChange = (e) => {
-//         setFile(e.target.files[0]);
-//     };
-
-//     const handleUpload = async () => {
-//         const formData = new FormData();
-//         formData.append('file', file);
-
-//         await axios.post('http://localhost:5000/upload', formData, {
-//             headers: {
-//                 'Content-Type': 'multipart/form-data'
-//             }
-//         });
-//         fetchFiles();
-//     };
-
-//     const generateVectorStore = async () => {
-//         await axios.post('http://localhost:5000/generate_vector_store');
-//         alert('Vector store generated and stored in PostgreSQL successfully!');
-//     };
-
-//     const handleFileClick = (filename) => {
-//         setSelectedFile(`http://localhost:5000/files/${filename}`);
-//     };
-
-//     return (
-//         <div className="pdf-container">
-//             <div className="upload-section">    
-//                 <input type="file" onChange={handleFileChange} />
-//                 <button style={{ margin: '0 2px' }} onClick={handleUpload}>Upload</button>
-//                 <button style={{ margin: '0 2px' }} onClick={generateVectorStore}>Sync Vector Store</button>       
-//                 <UploadedFiles files={uploadedFiles} onFileClick={handleFileClick} />
-//             </div>
-//             <div className="display-section">
-//                 {selectedFile && <PDFPreview selectedFile={selectedFile} />}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default UploadComponent;
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
@@ -80,7 +19,7 @@ const UploadComponent = () => {
         setUploadedFiles(response.data);
     };
 
-    const onDrop = useCallback((acceptedFiles) => {
+    const onDrop = useCallback(acceptedFiles => {
         const formData = new FormData();
         formData.append('file', acceptedFiles[0]);
 
@@ -113,8 +52,8 @@ const UploadComponent = () => {
                     {
                         isDragActive ?
                             <p>Drop the files here ...</p> :
-                            <p>Drag & drop a file here, or click to select a file</p>
-                    }
+                            <p>Drag 'n' drop some files here, or click to select files</p>
+                                                }
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <h4>Uploaded Files</h4>                

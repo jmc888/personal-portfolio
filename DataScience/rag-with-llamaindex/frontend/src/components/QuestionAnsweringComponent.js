@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const Chatbox = () => {
+const QuestionAnsweringComponent = () => {
     const [question, setQuestion] = useState('');
     const [response, setResponse] = useState('');
-    const [context, setContext] = useState('');
+    const [filename, setFilename] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleQuestionChange = (e) => {
@@ -14,12 +14,12 @@ const Chatbox = () => {
     const handleQuestionSubmit = async () => {
         setLoading(true);
         setResponse('');
-        setContext('');
+        setFilename('');
 
         try {
             const result = await axios.post('http://localhost:5000/query', { question });        
             setResponse(result.data.message);
-            setContext(result.data.context);
+            setFilename(result.data.filename);
         } catch (error) {
             setResponse('Error fetching response. Please try again.');
         } finally {
@@ -43,10 +43,10 @@ const Chatbox = () => {
             </div>
             <div style={{ minWidth: '50%', width: '65%' }}>
                 <h4>Response:</h4>
-                {loading ? <div>Loading...</div> : <p>{response} <br/> {context} </p>}
+                {loading ? (<div>Loading...</div>) : (<p>{response} <br/><br/> {filename} </p>)}
             </div>
         </div>
     );
 };
 
-export default Chatbox;
+export default QuestionAnsweringComponent;

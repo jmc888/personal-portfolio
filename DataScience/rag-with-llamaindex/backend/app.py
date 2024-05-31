@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
 import os
 from llama_index.vector_stores.postgres import PGVectorStore
-from llama_index.core.indices.service_context import ServiceContext
 from llama_index.core import (
     StorageContext,
     VectorStoreIndex,
@@ -23,11 +22,11 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # Initialize the vector store
 vector_store = PGVectorStore.from_params(
-    database=app.config["DB_NAME"],
-    host=app.config["DB_HOST"],
-    password=app.config["DB_PASSWORD"],
-    port=app.config["DB_PORT"],
-    user=app.config["DB_USER"],
+    database=os.getenv("DB_NAME"),  # app.config["DB_NAME"],
+    host=os.getenv("DB_HOST"),  # app.config["DB_HOST"],
+    password=os.getenv("DB_PASSWORD"),  # app.config["DB_PASSWORD"],
+    port=os.getenv("DB_PORT"),  # app.config["DB_PORT"],
+    user=os.getenv("DB_USER"),  # app.config["DB_USER"],
     table_name=app.config["VECTOR_STORE_DB_TABLE"],
     embed_dim=app.config["EMBED_DIMS"],
 )
@@ -45,6 +44,7 @@ llm = LlamaCPP(
     max_new_tokens=256,
     context_window=3900,
     generate_kwargs={},
+    # set to at least 1 to use GPU
     model_kwargs={"n_gpu_layers": 1},
     verbose=True,
 )
@@ -53,15 +53,10 @@ embed_model = HuggingFaceEmbedding(
     model_name=app.config["HUGGING_FACE_EMBEDDING_MODEL"]
 )
 
-# Configure global settings
-Settings.llm = llm
-Settings.embed_model = embed_model
-Settings.chunk_size = app.config["INDEX_CHUNK_SIZE"]
-Settings.chunk_overlap = app.config["INDEX_CHUNK_OVERLAP"]
-
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
+    print(request)
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
     f = request.files["file"]
@@ -89,13 +84,20 @@ def get_file(filename):
 
 @app.route("/sync_vector_store", methods=["POST"])
 def sync_vector_store():
+
+    # Configure global settings
+    Settings.llm = llm
+    Settings.embed_model = embed_model
+    Settings.chunk_size = app.config["INDEX_CHUNK_SIZE"]
+    Settings.chunk_overlap = app.config["INDEX_CHUNK_OVERLAP"]
+
     documents = SimpleDirectoryReader(app.config["UPLOAD_FOLDER"]).load_data()
 
     # Clean up documents by removing null characters
     for doc in documents:
         doc.text = doc.text.replace("\x00", "")
 
-    index = VectorStoreIndex.from_documents(
+    _ = VectorStoreIndex.from_documents(
         documents,
         storage_context=storage_context,
         show_progress=True,
@@ -115,26 +117,26 @@ def query_document():
     if question_text is None:
         return "No text found, please include a question in the JSON body", 400
 
-    service_context = ServiceContext.from_defaults(
-        llm=llm,
-        embed_model=embed_model,
-    )
+    # Configure global settings
+    Settings.llm = llm
+    Settings.embed_model = embed_model
+    Settings.chunk_size = app.config["INDEX_CHUNK_SIZE"]
+    Settings.chunk_overlap = app.config["INDEX_CHUNK_OVERLAP"]
+
     index = VectorStoreIndex.from_vector_store(
         vector_store=vector_store,
         embed_model=embed_model,
-        service_context=service_context,
     )
     query_engine = index.as_query_engine(similarity_top_k=2)
     results = query_engine.query(question_text)
 
     if results:
         filename = results.source_nodes[0].metadata.get("file_name", "N/A")
-        page_label = results.source_nodes[0].metadata.get("page_label", "N/A")
         return (
             jsonify(
                 {
                     "message": str(results),
-                    "context": f"-- Source: {filename} page {page_label}",
+                    "filename": str(filename),
                 }
             ),
             200,
