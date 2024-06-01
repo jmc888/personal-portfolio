@@ -56,7 +56,7 @@ embed_model = HuggingFaceEmbedding(
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
-    print(request)
+
     if "files" not in request.files:
         return jsonify({"error": "No files part in the request"}), 400
     files = request.files.getlist("files")
@@ -93,13 +93,13 @@ def sync_vector_store():
     Settings.chunk_size = app.config["INDEX_CHUNK_SIZE"]
     Settings.chunk_overlap = app.config["INDEX_CHUNK_OVERLAP"]
 
-    documents = SimpleDirectoryReader(app.config["UPLOAD_FOLDER"]).load_data()
+    documents = SimpleDirectoryReader(input_dir=app.config["UPLOAD_FOLDER"]).load_data()
 
     # Clean up documents by removing null characters
     for doc in documents:
         doc.text = doc.text.replace("\x00", "")
 
-    index = VectorStoreIndex.from_documents(
+    _ = VectorStoreIndex.from_documents(
         documents,
         storage_context=storage_context,
         show_progress=True,
@@ -115,6 +115,7 @@ def sync_vector_store():
 
 @app.route("/query", methods=["POST"])
 def query_document():
+
     question_text = request.json.get("question", None)
     if question_text is None:
         return "No text found, please include a question in the JSON body", 400
@@ -129,7 +130,10 @@ def query_document():
         vector_store=vector_store,
         embed_model=embed_model,
     )
-    query_engine = index.as_query_engine(similarity_top_k=4)
+    query_engine = index.as_query_engine(
+        similarity_top_k=app.config["SIMILARITY_TOP_K"]
+    )
+
     results = query_engine.query(question_text)
 
     if results:
@@ -148,4 +152,4 @@ def query_document():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
