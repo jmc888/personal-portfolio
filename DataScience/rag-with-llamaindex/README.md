@@ -2,6 +2,10 @@
 
 ## Description
 This mini web application allows users to upload PDF files and perform document question-answering about the uploaded files. It uses the technique called Retrival-augmented Generation (RAG) to first retrieve the relevant passage to the questions being asked across all uploaded files, and then genrate the answer using a large language model with the additional retrieved context.
+![Demo Img](demo/demo.png)
+
+## Demo
+![Demo GIF](demo/demo.gif)
 
 ### Tech Stack
 - LLM data framework: LlamaIndex
@@ -11,9 +15,6 @@ This mini web application allows users to upload PDF files and perform document 
 - Frontend: React
 - Backend: Flask
 
-## Demo
-
-
-## Usage
-```sh
-node index.js
+## Next Step
+- Add docker file for easy deployment
+- Host DB in AWS
